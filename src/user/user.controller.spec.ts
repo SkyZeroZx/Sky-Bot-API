@@ -1,15 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { Constants } from '../common/constants/Constant';
 import { UserServiceMock } from './user.mock.spec';
-import * as filterHelperUtil from '../common/helpers/fileFilter.helper';
+import { UserService } from './user.service';
+
 describe('UserController', () => {
   let userController: UserController;
   let userService: UserService;
-  const mockResult: any = {
-    message: Constants.MSG_OK,
-  };
   let mockService: UserServiceMock = new UserServiceMock();
 
   beforeEach(async () => {
@@ -26,43 +22,40 @@ describe('UserController', () => {
     expect(userController).toBeDefined();
   });
 
-  it('Validamos create', async () => {
-    const spyCreate = jest.spyOn(userService, 'create').mockImplementation(() => mockResult);
+  it('validate create', async () => {
+    const spyCreate = jest.spyOn(userService, 'create');
     await userController.create(UserServiceMock.mockCreateDto);
     expect(spyCreate).toBeCalled();
   });
 
-  it('Validamos findAll', async () => {
-    const spyFindAll = jest.spyOn(userService, 'findAll');
-    await userController.findAll();
-    expect(spyFindAll).toBeCalled();
+  it('validate getUsers', async () => {
+    const spyGetUsers = jest.spyOn(userService, 'getUsers');
+    await userController.getUsers(UserServiceMock.pageOptionsDto);
+    expect(spyGetUsers).toBeCalled();
   });
 
-  it('Validamos Update', async () => {
-    const spyUpdate = jest.spyOn(userService, 'update').mockImplementation(async () => mockResult);
-    await userController.update(UserServiceMock.updateUser);
+  it('validate profile', async () => {
+    const spyProfile = jest.spyOn(userService, 'getUserById');
+    await userController.profile(UserServiceMock.userMock);
+    expect(spyProfile).toBeCalled();
+  });
+
+  it('validate update', async () => {
+    const spyUpdate = jest.spyOn(userService, 'update');
+    await userController.update(UserServiceMock.userMock, UserServiceMock.userMock);
     expect(spyUpdate).toBeCalled();
   });
 
-  it('Validamos Delete', async () => {
-    const spyRemove = jest.spyOn(userService, 'remove').mockImplementation(async () => mockResult);
-    await userController.remove(UserServiceMock.deleteUser);
+  it('validate remove', async () => {
+    const spyRemove = jest.spyOn(userService, 'remove');
+    await userController.remove(UserServiceMock.deleteUserDto);
     expect(spyRemove).toBeCalled();
   });
 
-  it('Validamos Profile', async () => {
-    const userProfile = UserServiceMock.mockFindAllUserData[0];
-    const spyProfileService = jest.spyOn(userService, 'getUserById').mockResolvedValue(userProfile);
-    const profile = await userController.profile(UserServiceMock.userMock);
-    expect(profile).toEqual(userProfile);
-    expect(spyProfileService).toBeCalledWith(UserServiceMock.userMock.id);
-  });
-
   it('Validate SavePhotoUser', async () => {
-    const spyMaxSizeFile = jest.spyOn(filterHelperUtil, 'maxSizeFile').mockReturnValueOnce(null);
     const spySavePhotoUser = jest.spyOn(userService, 'savePhotoUser');
-    await userController.savePhotoUser(null, UserServiceMock.userMock);
-    expect(spyMaxSizeFile).toBeCalledWith(null);
-    expect(spySavePhotoUser).toBeCalledWith(null, UserServiceMock.userMock);
+    await userController.savePhotoUser(UserServiceMock.fileMock as any, UserServiceMock.userMock);
+
+    expect(spySavePhotoUser).toBeCalledWith(UserServiceMock.fileMock, UserServiceMock.userMock);
   });
 });

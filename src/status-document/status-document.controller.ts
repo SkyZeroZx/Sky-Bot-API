@@ -4,8 +4,7 @@ import { CreateStatusDocumentDto } from './dto/create-status-document.dto';
 import { PageOptionsDto } from '@core/interface/pagination';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User as UserEntity } from '../user/entities/user.entity';
-import { UserDecorator as User, Auth } from '@core/decorators';
-import { PermissionsDecorator as Permissions } from '@core/decorators';
+import { Auth, PermissionsDecorator as Permissions, UserDecorator as User } from '@core/decorators';
 import { ADMIN, ALL_ROLES, EMPLOYEE, PERMISSIONS } from '@core/config';
 
 @ApiTags('Status Document')
@@ -32,7 +31,7 @@ export class StatusDocumentController {
   }
 
   @Get('status-document-dni')
-  @Auth([ADMIN, EMPLOYEE])
+  @Auth([...ALL_ROLES])
   @ApiOperation({ summary: 'Obtener lista de tramites del estudiante por DNI en el JWT' })
   getStatusDocumentByDni(@User() user: UserEntity) {
     return this.statusDocumentService.getStatusDocumentByDni(user.dni);

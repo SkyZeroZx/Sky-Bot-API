@@ -12,7 +12,7 @@ describe('User Role Guard ', () => {
     getHandler: jest.fn(),
     switchToHttp: jest.fn(() => ({
       getRequest: jest.fn().mockImplementation(() => {
-        return { user: AuthMockService.userCreate };
+        return { user: AuthMockService.user };
       }),
     })),
   };
@@ -40,7 +40,7 @@ describe('User Role Guard ', () => {
   });
 
   it('Validamos canActivate', async () => {
-    const { role, username } = AuthMockService.userCreate;
+    const { role, username } = AuthMockService.user;
     const spyReflectorGet = jest.spyOn(reflectorMock, 'get').mockImplementation(() => {
       return '';
     });

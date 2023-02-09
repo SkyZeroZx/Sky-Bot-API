@@ -5,16 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Column,
-  BeforeInsert,
-  BeforeUpdate,
   JoinColumn,
   OneToMany,
-  ManyToOne,
 } from 'typeorm';
 import { MinLength, IsNotEmpty, IsEmail, MaxLength } from 'class-validator';
-import * as bcrypt from 'bcryptjs';
-import { Constants } from '@core/constants/Constant';
 import { Notification } from '../../notification/entities/notification.entity';
+import { STATUS_USER } from '../../core/constants';
 
 @Entity()
 @Unique(['username', 'dni'])
@@ -60,7 +56,7 @@ export class User {
   @IsNotEmpty()
   motherLastName: string;
 
-  @Column('varchar', { length: 35, default: Constants.STATUS_USER.CREATE })
+  @Column('varchar', { length: 35, default: STATUS_USER.CREATE })
   status: string;
 
   @Column('boolean', { default: true })

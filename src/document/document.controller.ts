@@ -1,10 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { Auth } from '@core/decorators';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
-import { PermissionsDecorator as Permissions } from '@core/decorators';
+import { Auth, PermissionsDecorator as Permissions } from '@core/decorators';
 import { ADMIN, EMPLOYEE, PERMISSIONS } from '@core/config';
 
 @ApiTags('Document')
@@ -30,7 +29,7 @@ export class DocumentController {
   @Get(':name')
   @Permissions([PERMISSIONS.use.webhook])
   @ApiOperation({ summary: 'Obtenemos documento por su nombre' })
-  findOne(@Param('name') name: string) {
+  getDocumentByName(@Param('name') name: string) {
     return this.documentService.getDocumentByName(name);
   }
 

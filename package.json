@@ -123,6 +123,9 @@
     "indent": 4
   },
   "jest": {
+    "moduleNameMapper": {
+      "^@core(.*)$": "<rootDir>/core/$1"
+    },
     "testTimeout": 15000,
     "moduleFileExtensions": [
       "js",
@@ -146,10 +149,13 @@
       "!**/*.enum.(t|j)s",
       "!**/config/logger/**",
       "!**/config/mailer/**",
-      "!**/config/webAuthentication/**",
       "!**/config/webpush/**",
-      "!**common/helpers/**",
-      "!**common/swagger/**",
+      "!**core/helpers/**",
+      "!**core/swagger/**",
+      "!**core/interceptor/**",
+      "!**core/interface/**",
+      "!**core/config/**",
+      "!**auth/guards/index.(t|j)s",
       "!**main.(t|j)s"
     ],
     "coverageDirectory": "../coverage",

@@ -20,7 +20,7 @@ import { User as UserEntity } from '../user/entities/user.entity';
 import { UserDecorator as User, Auth } from '@core/decorators';
 import { UserReponse, GenericResponse } from '@core/swagger/response';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { fileFilter, maxSizeFile } from '@core/helpers/fileFilter.helper';
+import { fileFilter, maxSizeFile } from '@core/helpers';
 import { PageOptionsDto } from '@core/interface/pagination';
 import { ADMIN, ALL_ROLES } from '@core/config';
 
@@ -44,9 +44,9 @@ export class UserController {
   @Auth([ADMIN])
   @ApiOperation({ summary: 'Listado de todos los usuarios' })
   @ApiResponse(UserReponse.findAll)
-  findAll(@Query() pageOptionsDto: PageOptionsDto) {
+  getUsers(@Query() pageOptionsDto: PageOptionsDto) {
     this.logger.log('Listando Usuarios');
-    return this.userService.findAll(pageOptionsDto);
+    return this.userService.getUsers(pageOptionsDto);
   }
 
   @Get('/profile')

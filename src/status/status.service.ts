@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Constants } from '@core/constants/Constant';
 import { ReportChart } from '@core/interface/charts';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { Status } from './entities/status.entity';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { MSG_OK } from '@core/constants/general';
 
 @Injectable()
 export class StatusService {
@@ -16,11 +16,10 @@ export class StatusService {
   ) {}
 
   async createStatus(createStatusDto: CreateStatusDto) {
-    this.logger.log({ message: 'Registrando status', createStatusDto });
+    this.logger.log({ message: 'Registrando status', info: createStatusDto });
     try {
-      const status = await this.statusRepository.save(createStatusDto);
-      this.logger.log({ message: 'status registrado es', status });
-      return { message: Constants.MSG_OK, info: 'Se registro exitosamente el Status' };
+      await this.statusRepository.save(createStatusDto);
+      return { message: MSG_OK, info: 'Se registro exitosamente el Status' };
     } catch (error) {
       this.logger.error({ message: 'Sucedio un error al registrar status', createStatusDto });
       this.logger.error(error);
@@ -40,10 +39,6 @@ export class StatusService {
         },
       });
 
-      if (!listStatusDocument) {
-        throw new Error('List Status Not Found');
-      }
-
       return listStatusDocument;
     } catch (error) {
       this.logger.error({ message: 'Sucedio un error al obtener status' });
@@ -59,7 +54,7 @@ export class StatusService {
         status: updateStatusDto.status,
       });
 
-      return { message: Constants.MSG_OK, info: 'Status Actualizado correctamente' };
+      return { message: MSG_OK, info: 'Status Actualizado correctamente' };
     } catch (error) {
       console.error(error);
       this.logger.error({ message: 'Error al actualizar status', error });
@@ -70,7 +65,7 @@ export class StatusService {
   async deleteStatus(idStatus: number) {
     try {
       await this.statusRepository.delete({ idStatus });
-      return { message: Constants.MSG_OK, info: 'Status Elimina correctamente' };
+      return { message: MSG_OK, info: 'Status Elimina correctamente' };
     } catch (error) {
       throw new InternalServerErrorException('Error al eliminar status');
     }

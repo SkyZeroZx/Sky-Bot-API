@@ -2,12 +2,19 @@ import { Injectable, Logger, RequestTimeoutException } from '@nestjs/common';
 import { Upload } from '@aws-sdk/lib-storage';
 import { CompleteMultipartUploadOutput, S3Client } from '@aws-sdk/client-s3';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { ATTACHMENT_SERVER_URL } from '@core/constants';
+import { AttachmentServerResponse } from '@core/interface/attachment-server';
 
 @Injectable()
 export class AwsS3Service {
+  private readonly attachmentServerUrl = this.configService.get<string>(ATTACHMENT_SERVER_URL);
   private readonly logger = new Logger(AwsS3Service.name);
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async uploadFile(imageBuffer: Buffer, filename: string): Promise<CompleteMultipartUploadOutput> {
     this.logger.log(`Subiendo archivo ${filename}`);
@@ -30,17 +37,18 @@ export class AwsS3Service {
     }
   }
 
-  async uploadAttachment(url: string) {
+  async uploadAttachment(url: string): Promise<AttachmentServerResponse> {
     try {
-      const { data } = await this.httpService.axiosRef.post(
-        'https://skyzerozx.com/upload/upload-attachment.php',
+      const { data } = await this.httpService.axiosRef.post<AttachmentServerResponse>(
+        this.attachmentServerUrl,
         {
-          url: url,
+          url,
         },
       );
       this.logger.log({ message: 'Upload attachment response', data });
       return data;
     } catch (error) {
+      this.logger.error({ message: 'Sucedio un error al subir el archivo', error });
       throw new RequestTimeoutException('Sucedio un error al subir el archivo');
     }
   }

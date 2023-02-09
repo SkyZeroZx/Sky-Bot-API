@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Constants } from '@core/constants/Constant';
 import { PageDto, PageMetaDto, PageOptionsDto } from '@core/interface/pagination';
 import { Document } from '../document/entities/document.entity';
 import { Status } from '../status/entities/status.entity';
@@ -11,6 +10,7 @@ import { StatusDocument } from './entities/status-document.entity';
 import { StatusService } from '../status/status.service';
 import { AttachmentService } from '../attachment/attachment.service';
 import { CertificateService } from '../certificate/certificate.service';
+import { INITIAL_OBSERVATION, INITIAL_STATUS, MSG_OK } from '@core/constants/general';
 
 @Injectable()
 export class StatusDocumentService {
@@ -19,20 +19,25 @@ export class StatusDocumentService {
     @InjectRepository(StatusDocument)
     private readonly statusDocumentRepository: Repository<StatusDocument>,
     private statusService: StatusService,
-    private attachmentsService: AttachmentService,
+    private attachmentService: AttachmentService,
     private certificateService: CertificateService,
   ) {}
 
   async createStatusDocument(createStatusDocumentDto: CreateStatusDocumentDto) {
-    this.logger.log({ message: 'Registrando tramite ', createStatusDocumentDto });
+    this.logger.log({ message: 'Registrando tramite ', info: createStatusDocumentDto });
     try {
       const statusDocument = await this.statusDocumentRepository.insert(createStatusDocumentDto);
-      this.logger.log({ message: 'documento registrado es ', statusDocument });
-      return { message: Constants.MSG_OK, info: 'Se registro exitosamente el StatusDocument' };
+      await this.statusService.createStatus({
+        idStatusDocument: createStatusDocumentDto.idStatusDocument,
+        observations: INITIAL_OBSERVATION,
+        status: INITIAL_STATUS,
+      });
+      this.logger.log({ message: 'documento registrado es ', info: statusDocument });
+      return { message: MSG_OK, info: 'Se registro exitosamente el StatusDocument' };
     } catch (error) {
       this.logger.error({
         message: 'Sucedio un error al registrar status document ',
-        createStatusDocumentDto,
+        info: createStatusDocumentDto,
       });
       this.logger.error(error);
       throw new InternalServerErrorException('Sucedio un error al registrar status document');
@@ -41,7 +46,7 @@ export class StatusDocumentService {
 
   async getStudentDocument(pageOptionsDto: PageOptionsDto) {
     const studentDocumentBuilder =
-      this.statusDocumentRepository.createQueryBuilder('STUDENT_DOCUMENT');
+      this.statusDocumentRepository.createQueryBuilder('STATUS_DOCUMENT');
 
     if (pageOptionsDto.search) {
       studentDocumentBuilder.andWhere(
@@ -59,16 +64,16 @@ export class StatusDocumentService {
     }
 
     const statusDocument = await studentDocumentBuilder
-      .select('STUDENT_DOCUMENT.idStatusDocument', 'idStatusDocument')
-      .addSelect('STUDENT_DOCUMENT.idStudent', 'idStudent')
+      .select('STATUS_DOCUMENT.idStatusDocument', 'idStatusDocument')
+      .addSelect('STATUS_DOCUMENT.idStudent', 'idStudent')
       .addSelect('STUDENT.name', 'studentName')
       .addSelect('STUDENT.lastName', 'studentLastName')
       .addSelect('DOCUMENT.name', 'documentName')
       .addSelect('STATUS.status', 'status')
       .addSelect('STATUS.registerDate', 'registerDate')
-      .innerJoin(Student, 'STUDENT', 'STUDENT.idStudent = STUDENT_DOCUMENT.idStudent')
-      .innerJoin(Document, 'DOCUMENT', 'DOCUMENT.idDocument = STUDENT_DOCUMENT.idDocument')
-      .innerJoin(Status, 'STATUS', 'STATUS.idStatusDocument = STUDENT_DOCUMENT.idStatusDocument')
+      .innerJoin(Student, 'STUDENT', 'STUDENT.idStudent = STATUS_DOCUMENT.idStudent')
+      .innerJoin(Document, 'DOCUMENT', 'DOCUMENT.idDocument = STATUS_DOCUMENT.idDocument')
+      .innerJoin(Status, 'STATUS', 'STATUS.idStatusDocument = STATUS_DOCUMENT.idStatusDocument')
       .leftJoin(
         Status,
         'LEFT_STATUS',
@@ -88,7 +93,19 @@ export class StatusDocumentService {
   }
 
   async getStatusDocumentById(idStatusDocument: string) {
-    const statusDocumentByStudent = await this.statusDocumentRepository
+    const statusDocumentByStudent = await this.getDocumentById(idStatusDocument);
+    const statusDocument = await this.statusService.getStatusByIdStatusDocument(idStatusDocument);
+    const listAttachment = await this.attachmentService.getAttachmentsByIdStatusDocument(
+      idStatusDocument,
+    );
+    const listCertificate = await this.certificateService.getCertificateByIdStatusDocument(
+      idStatusDocument,
+    );
+    return { statusDocumentByStudent, statusDocument, listAttachment, listCertificate };
+  }
+
+  async getDocumentById(idStatusDocument: string) {
+    return await this.statusDocumentRepository
       .createQueryBuilder('STATUS_DOCUMENT')
       .select('STATUS_DOCUMENT.idStatusDocument', 'idStatusDocument')
       .addSelect('STATUS_DOCUMENT.idStudent', 'idStudent')
@@ -99,30 +116,21 @@ export class StatusDocumentService {
       .innerJoin(Document, 'DOCUMENT', 'DOCUMENT.idDocument = STATUS_DOCUMENT.idDocument')
       .where('STATUS_DOCUMENT.idStatusDocument =:idStatusDocument', { idStatusDocument })
       .getRawOne();
-
-    const statusDocument = await this.statusService.getStatusByIdStatusDocument(idStatusDocument);
-    const listAttachment = await this.attachmentsService.getAttachmentsByIdStatusDocument(
-      idStatusDocument,
-    );
-    const listCertificate = await this.certificateService.getCertificateByIdStatusDocument(
-      idStatusDocument,
-    );
-    return { statusDocumentByStudent, statusDocument, listAttachment, listCertificate };
   }
 
   async getStatusDocumentByDni(dni: string) {
     return await this.statusDocumentRepository
-      .createQueryBuilder('STUDENT_DOCUMENT')
-      .select('STUDENT_DOCUMENT.idStatusDocument', 'idStatusDocument')
-      .addSelect('STUDENT_DOCUMENT.idStudent', 'idStudent')
+      .createQueryBuilder('STATUS_DOCUMENT')
+      .select('STATUS_DOCUMENT.idStatusDocument', 'idStatusDocument')
+      .addSelect('STATUS_DOCUMENT.idStudent', 'idStudent')
       .addSelect('STUDENT.name', 'studentName')
       .addSelect('STUDENT.lastName', 'studentLastName')
       .addSelect('DOCUMENT.name', 'documentName')
       .addSelect('STATUS.status', 'status')
       .addSelect('STATUS.registerDate', 'registerDate')
-      .innerJoin(Student, 'STUDENT', 'STUDENT.idStudent = STUDENT_DOCUMENT.idStudent')
-      .innerJoin(Document, 'DOCUMENT', 'DOCUMENT.idDocument = STUDENT_DOCUMENT.idDocument')
-      .innerJoin(Status, 'STATUS', 'STATUS.idStatusDocument = STUDENT_DOCUMENT.idStatusDocument')
+      .innerJoin(Student, 'STUDENT', 'STUDENT.idStudent = STATUS_DOCUMENT.idStudent')
+      .innerJoin(Document, 'DOCUMENT', 'DOCUMENT.idDocument = STATUS_DOCUMENT.idDocument')
+      .innerJoin(Status, 'STATUS', 'STATUS.idStatusDocument = STATUS_DOCUMENT.idStatusDocument')
       .leftJoin(
         Status,
         'LEFT_STATUS',

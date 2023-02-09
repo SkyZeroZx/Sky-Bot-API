@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Constants } from '@core/constants/Constant';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
 import * as webpush from 'web-push';
+import { MSG_OK, NOTIFICATION_NEW_TASK } from '@core/constants';
 
 @Injectable()
 export class NotificationService {
@@ -37,7 +37,7 @@ export class NotificationService {
     }
 
     this.logger.log(`Se guardo el token para el usuario codigo ${codUser}`);
-    return { message: Constants.MSG_OK, info: 'Se guardo el token exitosamente' };
+    return { message: MSG_OK, info: 'Se guardo el token exitosamente' };
   }
 
   async sendNotification(tokenPush: string, message: Object) {
@@ -78,13 +78,13 @@ export class NotificationService {
 
       listTokensPerUser.forEach((tokens) => {
         tokens.forEach(({ tokenPush }) => {
-          this.sendNotification(tokenPush, Constants.NOTIFICATION_NEW_TASK);
+          this.sendNotification(tokenPush, NOTIFICATION_NEW_TASK);
         });
       });
 
       this.logger.log('Notificaciones enviadas exitosamente');
       return {
-        message: Constants.MSG_OK,
+        message: MSG_OK,
         info: 'Notificaciones enviadas exitosamente',
       };
     } catch (error) {

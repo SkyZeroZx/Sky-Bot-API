@@ -1,9 +1,12 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import crypto from 'crypto';
 import { Repository } from 'typeorm';
-import { Constants } from '@core/constants/Constant';
+import { MSG_OK } from '@core/constants';
+import { AwsS3Service } from '@core/services';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { Certificate } from './entities/certificate.entity';
+import { fileNamer } from '@core/helpers';
 
 @Injectable()
 export class CertificateService {
@@ -12,14 +15,22 @@ export class CertificateService {
   constructor(
     @InjectRepository(Certificate)
     private readonly certificateRepository: Repository<Certificate>,
+    private readonly awsS3Service: AwsS3Service,
   ) {}
 
-  async createCertificate(createCertificateDto: CreateCertificateDto) {
+  async createCertificate(file: Express.Multer.File, createCertificateDto: CreateCertificateDto) {
     try {
-      // TODO: ADD DI for AWS3 update certificate for register Certificate in Database with link
-      // await this.certificateRepository.save({
-      // })
-      return { message: Constants.MSG_OK, info: 'Certificado registrado exitosamente' };
+      const { Location } = await this.awsS3Service.uploadFile(
+        file.buffer,
+        fileNamer(file, crypto.randomUUID()),
+      );
+
+      await this.certificateRepository.save({
+        idStatusDocument: createCertificateDto.idStatusDocument,
+        url: Location,
+      });
+
+      return { message: MSG_OK, info: 'Certificado registrado exitosamente' };
     } catch (error) {
       this.logger.error({ message: 'Sucedio un error al registrar el certificado', error });
       throw new InternalServerErrorException('Error al registrar el certificado');
@@ -44,7 +55,7 @@ export class CertificateService {
     this.logger.log(`Eliminando certificado para codigo ${idCertificate}`);
     try {
       await this.certificateRepository.delete(idCertificate);
-      return { message: Constants.MSG_OK, info: 'Certificado eliminado exitosamente' };
+      return { message: MSG_OK, info: 'Certificado eliminado exitosamente' };
     } catch (error) {
       this.logger.error({ message: 'Sucedio un error al eliminar el certificado', error });
       throw new InternalServerErrorException('Error al eliminar el certificado');

@@ -7,12 +7,12 @@ export class PermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    const routePermissions = this.reflector.get<string[]>('permissions', context.getHandler());
+    const routePermissions: string[] = this.reflector.get<string[]>(
+      'permissions',
+      context.getHandler(),
+    );
 
-    console.log('routePermissions', routePermissions);
-    const contextMock = context.getArgs()[0].user;
-    console.log('contextMock', contextMock);
-    const userPermissions = context.getArgs()[0].user.scope;
+    const userPermissions: string = context.getArgs()[0].user.scope;
 
     if (!routePermissions) {
       return true;

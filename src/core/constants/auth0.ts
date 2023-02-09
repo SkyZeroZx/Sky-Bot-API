@@ -1,0 +1,4 @@
+export const AUTH0_JWKS_URI = 'AUTH0_JWKS_URI';
+export const AUTH0_AUDIENCE = 'AUTH0_AUDIENCE';
+export const AUTH0_ISSUER = 'AUTH0_ISSUER';
+export const AUTH0_ALGORITHMS = 'AUTH0_ALGORITHMS';

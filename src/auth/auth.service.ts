@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { Constants } from '@core/constants/Constant';
 import { transporter } from '@core/config';
 import { Auth0Service } from '@core/services';
+import { MAIL_RESET_USER, MSG_OK, STATUS_USER } from '@core/constants';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,7 @@ export class AuthService {
           connection: this.auth0Service.connection,
           blocked: false,
           user_metadata: {
-            status: Constants.STATUS_USER.ENABLED,
+            status: STATUS_USER.ENABLED,
           },
         },
       );
@@ -35,13 +35,13 @@ export class AuthService {
         from: 'Sky Bot <sky-admin@gmail.com>',
         to: username,
         subject: 'Reseteo Contraseña',
-        html: Constants.MAIL_RESET_USER(username, ticket),
+        html: MAIL_RESET_USER(username, ticket),
       });
 
       this.logger.log(`Se envio correo de reseteo del usuario ${username}`);
-      return { message: Constants.MSG_OK, info: 'Usuario reseteado exitosamente' };
+      return { message: MSG_OK, info: 'Usuario reseteado exitosamente' };
     } catch (error) {
-      this.logger.error('Hubo un error al enviar el correo de reseteo');
+      this.logger.error({ message: 'Hubo un error al enviar el correo de reseteo', info: error });
       throw new InternalServerErrorException('Hubo un error al enviar el correo de reseteo');
     }
   }

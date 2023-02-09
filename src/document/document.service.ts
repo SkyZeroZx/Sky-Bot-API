@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Constants } from '@core/constants/Constant';
+import { MSG_OK } from '@core/constants';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { Document } from './entities/document.entity';
@@ -15,10 +15,9 @@ export class DocumentService {
   ) {}
 
   async getDocumentByName(name: string): Promise<Document> {
+    this.logger.log({ message: `Buscando el documento ${name}` });
     try {
-      const document = await this.documentRepository.findOneOrFail({ where: { name: name } });
-      this.logger.log({ message: 'Documento buscado es', document });
-      return document;
+      return await this.documentRepository.findOneOrFail({ where: { name: name } });
     } catch (error) {
       this.logger.error(`Sucedio un error al buscar el document ${name}`);
       this.logger.error(error);
@@ -27,12 +26,12 @@ export class DocumentService {
   }
 
   async createDocument(createDocumentDto: CreateDocumentDto) {
-    this.logger.log({ message: 'Creando documento', createDocumentDto });
+    this.logger.log({ message: 'Creando documento', info: createDocumentDto });
     try {
       await this.documentRepository.save(createDocumentDto);
-      return { message: Constants.MSG_OK, info: 'Se creo exitosamente el documento' };
+      return { message: MSG_OK, info: 'Se creo exitosamente el documento' };
     } catch (error) {
-      this.logger.error({ message: 'Error al crear documento', error });
+      this.logger.error({ message: 'Error al crear documento', info: error });
       throw new InternalServerErrorException('Error al crear documento');
     }
   }
@@ -47,9 +46,9 @@ export class DocumentService {
         name: updateDocumentDto.name,
         requirements: updateDocumentDto.requirements,
       });
-      return { message: Constants.MSG_OK, info: 'Se actualizo exitosamente el documento' };
+      return { message: MSG_OK, info: 'Se actualizo exitosamente el documento' };
     } catch (error) {
-      this.logger.error({ message: 'Sucedio un error al actualizar el documento', error });
+      this.logger.error({ message: 'Sucedio un error al actualizar el documento', info: error });
       throw new InternalServerErrorException('Sucedio un error al actualizar el documento');
     }
   }
@@ -58,9 +57,9 @@ export class DocumentService {
     this.logger.log(`Eliminando documento codigo: ${idDocument}`);
     try {
       await this.documentRepository.delete({ idDocument });
-      return { message: Constants.MSG_OK, info: 'Se elimino exitosamente el documento' };
+      return { message: MSG_OK, info: 'Se elimino exitosamente el documento' };
     } catch (error) {
-      this.logger.error({ message: 'Sucedio un error al eliminar el documento', error });
+      this.logger.error({ message: 'Sucedio un error al eliminar el documento', info: error });
       throw new InternalServerErrorException('Sucedio un error al eliminar el documento');
     }
   }

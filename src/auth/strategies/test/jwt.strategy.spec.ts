@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Constants } from '../../../common/constants/Constant';
+import { STATUS_USER } from '../../../core/constants';
 
 import { UserService } from '../../../user/user.service';
 import { AuthMockService } from '../../auth.mock.spec';
@@ -57,11 +57,11 @@ describe('JWT Strategy ', () => {
 
     // Validamos para el caso cuando es un usuario habilitado
     spyFindById.mockImplementation(async () => {
-      return AuthMockService.userHabilitado;
+      return AuthMockService.user;
     });
     const userHabilitadoValite = await jwtStrategy.validate(payloadMock);
     expect(spyFindById).toHaveBeenNthCalledWith(2, payloadMock.userId);
-    expect(userHabilitadoValite).toEqual(AuthMockService.userHabilitado);
+    expect(userHabilitadoValite).toEqual(AuthMockService.user);
 
     //Validamos para el caso de un usuario reseteado
     spyFindById.mockImplementation(async () => {
@@ -73,11 +73,11 @@ describe('JWT Strategy ', () => {
 
     // Validamos para el caso de un usuario bloqueado , el cual lanza una exception UnauthorizedException
     spyFindById.mockImplementation(async () => {
-      return AuthMockService.userBloq;
+      return AuthMockService.userBlocked;
     });
     await expect(jwtStrategy.validate(payloadMock)).rejects.toThrowError(
       new UnauthorizedException({
-        message: `Su usuario no se encuentra autorizado , tiene un status ${Constants.STATUS_USER.BLOQUEADO}`,
+        message: `Su usuario no se encuentra autorizado , tiene un status ${STATUS_USER.BLOCKED}`,
       }),
     );
 

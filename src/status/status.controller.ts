@@ -4,9 +4,8 @@ import { CreateStatusDto } from './dto/create-status.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReportChart } from '@core/interface/charts';
 import { UpdateStatusDto } from './dto/update-status.dto';
-import { Auth } from '@core/decorators';
-import { PermissionsDecorator as Permissions } from '@core/decorators';
-import { ADMIN, PERMISSIONS, STUDENT } from '@core/config';
+import { Auth, PermissionsDecorator as Permissions } from '@core/decorators';
+import { ADMIN, EMPLOYEE, PERMISSIONS, STUDENT } from '@core/config';
 
 @ApiTags('Status')
 @ApiBearerAuth()
@@ -15,16 +14,16 @@ export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 
   @Post()
-  @Permissions([PERMISSIONS.use.webhook])
+  @Auth([ADMIN, EMPLOYEE])
   @ApiOperation({ summary: 'Creacion de status sobre un documento registrado' })
-  create(@Body() createStatusDto: CreateStatusDto) {
+  createStatus(@Body() createStatusDto: CreateStatusDto) {
     return this.statusService.createStatus(createStatusDto);
   }
 
   @Get(':idStatusDocument')
   @Permissions([PERMISSIONS.use.webhook])
   @ApiOperation({ summary: 'Consulta de status por idStatusDocument' })
-  findOne(@Param('idStatusDocument') idStatusDocument: string) {
+  getStatusByIdStatusDocument(@Param('idStatusDocument') idStatusDocument: string) {
     return this.statusService.getStatusByIdStatusDocument(idStatusDocument);
   }
 

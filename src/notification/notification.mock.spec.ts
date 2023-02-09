@@ -1,3 +1,5 @@
+import { STATUS_USER } from '../core/constants';
+import { User } from '../user/entities/user.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { SendNotificationDto } from './dto/send-notification.dto';
 
@@ -31,4 +33,43 @@ export class NotificationMockService {
   public static readonly sendNotificationDto: SendNotificationDto = {
     users: [],
   };
+
+  public static readonly mockFindAllUserData: User[] = [
+    {
+      id: 1,
+      username: 'SkyZeroZx',
+      name: 'Jaime',
+      motherLastName: 'Burgos',
+      fatherLastName: 'Tejada',
+      role: 'Admin',
+      createdAt: new Date(),
+      updateAt: new Date(),
+      dni: '12312312',
+      status: STATUS_USER.CREATE,
+      firstLogin: false,
+      phone: null,
+      photo: null,
+    },
+    {
+      id: 2,
+      username: 'Test User 2',
+      name: 'User',
+      dni: '12312312',
+      status: STATUS_USER.CREATE,
+      firstLogin: false,
+      motherLastName: 'User Materno 2',
+      fatherLastName: 'Paterno 2',
+      role: 'employee',
+      createdAt: new Date(),
+      updateAt: new Date(),
+      phone: null,
+      photo: null,
+    },
+  ];
+
+  public static readonly tokenByUser: any[] = [
+    { tokePush: 'Token1' },
+    { tokePush: 'Token2' },
+    { tokePush: 'Token3' },
+  ];
 }

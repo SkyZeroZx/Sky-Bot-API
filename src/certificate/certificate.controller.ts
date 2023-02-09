@@ -1,9 +1,21 @@
-import { Controller, Get, Post, Body, Param, Delete, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Logger,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Auth } from '@core/decorators';
 import { CertificateService } from './certificate.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { ADMIN, EMPLOYEE } from '@core/config';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { fileFilter } from '@core/helpers';
 
 @ApiTags('Certificate')
 @ApiBearerAuth()
@@ -16,9 +28,13 @@ export class CertificateController {
   @Post()
   @Auth([ADMIN, EMPLOYEE])
   @ApiOperation({ summary: 'Registro de certificado para estudiante' })
-  createCertificate(@Body() createCertificateDto: CreateCertificateDto) {
+  @UseInterceptors(FileInterceptor('file', { fileFilter: fileFilter }))
+  createCertificate(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createCertificateDto: CreateCertificateDto,
+  ) {
     this.logger.log({ message: 'Subiendo certificado', createCertificateDto });
-    return this.certificateService.createCertificate(createCertificateDto);
+    return this.certificateService.createCertificate(file, createCertificateDto);
   }
 
   @Get(':idStatusDocument')

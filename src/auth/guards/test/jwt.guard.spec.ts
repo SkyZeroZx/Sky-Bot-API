@@ -1,6 +1,7 @@
 import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { AuthMockService } from '../../auth.mock.spec';
-import { JwtAuthGuard } from '../jwt-auth.guard';
+import { JwtAuthGuard } from '../jwt/jwt-auth.guard';
+ 
 
 describe('JWT Guard ', () => {
   let jwtAuthGuard: JwtAuthGuard;
@@ -21,7 +22,7 @@ describe('JWT Guard ', () => {
     // Validamos el caso OK
     let err: any = false;
     let info;
-    let user = AuthMockService.userCreate;
+    let user = AuthMockService.user;
     const handleRequestOk = jwtAuthGuard.handleRequest(err, user, info);
     expect(handleRequestOk).toEqual(user);
     // Validamos para el caso nos retorne un error

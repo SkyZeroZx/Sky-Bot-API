@@ -13,10 +13,11 @@ export class Auth0Service {
   private readonly logger = new Logger(Auth0Service.name);
   management: ManagementClient<AppMetadata, UserMetadata>;
   auth: AuthenticationClient;
-  public readonly connection = this.config.get('AUTH0_DB_NAME');
-  public readonly connectionId = this.config.get('AUTH0_DB_CONNECT_ID');
+  public readonly connection = this.config.get<string>('AUTH0_DB_NAME');
+  public readonly connectionId = this.config.get<string>('AUTH0_DB_CONNECT_ID');
 
   constructor(private readonly config: ConfigService) {
+    this.logger.log('Auth0Service initialized');
     let managementOptions: ManagementClientOptions = {
       domain: this.config.get('AUTH0_DOMAIN'),
       clientId: this.config.get('AUTH0_CLIENT_ID'),

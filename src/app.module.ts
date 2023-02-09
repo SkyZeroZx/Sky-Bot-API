@@ -11,7 +11,7 @@ import {
   DATABASE_PASSWORD,
   DATABASE_NAME,
   ENABLED_MYSQL_CACHE,
-} from '@core/constants/Constant';
+} from '@core/constants';
 import { AuthModule } from './auth/auth.module';
 import { Auth0Module, AwsS3Module } from '@core/services';
 import { NotificationModule } from './notification/notification.module';

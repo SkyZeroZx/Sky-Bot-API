@@ -1,10 +1,9 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Auth } from '@core/decorators';
 import { AttachmentService } from './attachment.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
 import { ADMIN, EMPLOYEE, PERMISSIONS } from '@core/config';
-import { PermissionsDecorator as Permissions } from '@core/decorators';
+import { Auth, PermissionsDecorator as Permissions } from '@core/decorators';
 
 @ApiTags('Attachment')
 @ApiBearerAuth()
